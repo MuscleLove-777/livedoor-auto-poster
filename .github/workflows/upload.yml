@@ -1,0 +1,46 @@
+name: Livedoor Blog Auto Post
+
+on:
+  schedule:
+    - cron: '0 22 * * *'
+    - cron: '0 6 * * *'
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests gdown pytrends
+
+      - name: Download uploaded log
+        continue-on-error: true
+        run: |
+          gh run download --name uploaded-log --dir . 2>/dev/null || echo "No previous log found"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run upload
+        env:
+          LIVEDOOR_USER_ID: ${{ secrets.LIVEDOOR_USER_ID }}
+          LIVEDOOR_API_KEY: ${{ secrets.LIVEDOOR_API_KEY }}
+          LIVEDOOR_BLOG_NAME: ${{ secrets.LIVEDOOR_BLOG_NAME }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: python upload.py
+
+      - name: Save uploaded log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uploaded-log
+          path: uploaded.json
+          overwrite: true
