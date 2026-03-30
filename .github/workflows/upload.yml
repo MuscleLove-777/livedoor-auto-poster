@@ -2,9 +2,7 @@ name: Livedoor Blog Auto Post
 
 on:
   schedule:
-    - cron: '0 22 * * *'
-    - cron: '0 6 * * *'
-    - cron: '0 14 * * *'
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 permissions:
